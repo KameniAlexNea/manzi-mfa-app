@@ -21,17 +21,19 @@ npm run build     # build de production → dist/
 npm run preview   # prévisualiser le build
 ```
 
-## Parcours utilisateur (mentoré)
+## Parcours utilisateur
 
-1. **Landing (Étape 1)** — choix du rôle : *Je cherche un mentor* / *Je souhaite devenir mentor*
+1. **Landing publique** — marketing (navbar, hero, comment ça marche, mentors à la une, communauté, footer). Aucune connexion requise pour naviguer.
 2. **Connexion** — simulée (Google / LinkedIn / GitHub)
 3. **Onboarding** — profil en 3 étapes (identité → stack → photo + bio)
-4. **Découvrir** — recherche & filtres de mentors
-5. **Profil mentor** — bio, stack, disponibilités
-6. **Réserver un Quick Chat** — sujet + durée → calendrier → créneau → confirmation
-7. **Agenda** — réservations à venir (+ gestion des disponibilités côté mentor)
-8. **Offres** — job board communautaire, détail, publication d'offre
-9. **Profil** — vue personnelle + déconnexion
+4. **Dashboard** — sidebar + barre de recherche (responsive : drawer sur mobile)
+   - **Home** — aperçu (stats, actions rapides, prochains Quick Chats)
+   - **Find a Mentor** — recherche & filtres de mentors, profils, réservation Quick Chat
+   - **Mes Mentorés** *(mentor)* — statuts (Actifs / En pause / Terminés), Message, Planifier, Relancer
+   - **Appointments** — agenda & gestion des disponibilités
+   - **Messages** — messagerie simulée
+   - **Jobs** — job board communautaire, détail, publication d'offre
+   - **Settings / Profil** — vue personnelle + déconnexion
 
 ## Structure
 

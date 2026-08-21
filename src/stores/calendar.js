@@ -40,32 +40,30 @@ const seedBookings = [
 ]
 
 // Mentorés rattachés à "mon" profil mentor (pour la vue "Mes mentorés")
+// Statuts : active | paused | done
 const seedMentorees = [
   {
     id: 'mr-1',
-    name: 'Léa Kouassi',
-    title: 'Étudiante en reconversion',
-    goal: 'Devenir développeuse frontend',
-    nextSession: 'Jeu 21 août · 10:00',
-    status: 'confirmed',
-    messages: 3
+    name: 'Lucas Martin',
+    role: 'Étudiant, Dev Frontend',
+    lastSession: '12 Oct',
+    status: 'active',
+    messages: 2
   },
   {
     id: 'mr-2',
-    name: 'Yannick Essomba',
-    title: 'Junior Data Analyst',
-    goal: 'Préparer un entretien Data',
-    nextSession: 'Lun 25 août · 09:30',
-    status: 'confirmed',
+    name: 'Amira Benali',
+    role: 'Junior UX Designer',
+    lastSession: '15 Oct',
+    status: 'active',
     messages: 1
   },
   {
     id: 'mr-3',
-    name: 'Awa Ndiaye',
-    title: 'Bootcamp Le Wagon',
-    goal: 'Review de projet final',
-    nextSession: '—',
-    status: 'pending',
+    name: 'Thomas Dubois',
+    role: 'Reconversion Data',
+    lastSession: '02 Sept',
+    status: 'paused',
     messages: 0
   }
 ]
@@ -94,6 +92,10 @@ export const useCalendarStore = defineStore('calendar', {
     removeSlot(index) {
       this.availability.splice(index, 1)
       this.persist()
+    },
+    setMentoreeStatus(id, status) {
+      const m = this.mentorees.find((x) => x.id === id)
+      if (m) m.status = status
     },
     connectAgenda(provider) {
       this.agendaConnected = true

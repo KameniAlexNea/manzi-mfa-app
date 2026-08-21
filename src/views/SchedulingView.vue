@@ -58,8 +58,14 @@ const nextMonth = () => {
   selected.value = null; selectedTime.value = ''
 }
 
+const hasSlots = (d) => {
+  if (!d) return false
+  const wd = WD[(d.getDay() + 6) % 7]
+  return mentor.value.availability.some((a) => a.startsWith(wd))
+}
+
 const pick = (d) => {
-  if (!d || isBeforeToday(d)) return
+  if (!d || isBeforeToday(d) || !hasSlots(d)) return
   selected.value = d
   selectedTime.value = ''
 }
@@ -70,8 +76,7 @@ const slotTimes = computed(() => {
   if (!selected.value) return []
   const wd = WD[(selected.value.getDay() + 6) % 7]
   const slots = mentor.value.availability.filter((a) => a.startsWith(wd))
-  const times = slots.map((s) => s.split(' ')[1]).filter(Boolean)
-  return times.length ? times : ['09:00', '10:30', '14:00', '16:30']
+  return slots.map((s) => s.split(' ')[1]).filter(Boolean)
 })
 
 const canConfirm = computed(() => selected.value && selectedTime.value)
@@ -123,9 +128,9 @@ const done = () => {
             :class="{
               today: d.toDateString() === today.toDateString(),
               selected: isSelected(d),
-              disabled: isBeforeToday(d)
+              disabled: isBeforeToday(d) || !hasSlots(d)
             }"
-            :disabled="isBeforeToday(d)"
+            :disabled="isBeforeToday(d) || !hasSlots(d)"
             @click="pick(d)"
           >
             {{ d.getDate() }}

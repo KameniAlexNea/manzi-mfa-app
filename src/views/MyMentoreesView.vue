@@ -1,21 +1,42 @@
 <script setup>
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { useCalendarStore } from '../stores/calendar'
 import { useToastStore } from '../stores/toast'
 import Avatar from '../components/Avatar.vue'
 import Icon from '../components/Icon.vue'
 import SheetModal from '../components/SheetModal.vue'
 
+const router = useRouter()
 const calendar = useCalendarStore()
 const toast = useToastStore()
 
+const filter = ref('Tous')
 const selected = ref(null)
 const reply = ref('')
 
+const FILTERS = ['Tous', 'Actifs', 'En pause', 'Terminés']
+
 const statusMeta = {
-  confirmed: { label: 'Session planifiée', cls: 'tag-green' },
-  pending: { label: 'En attente', cls: 'tag-amber' }
+  active: { label: 'Actif', cls: 'tag-green' },
+  paused: { label: 'En pause', cls: 'tag-amber' },
+  done: { label: 'Terminé', cls: 'tag-outline' }
 }
+
+const statusOf = (m) => statusMeta[m.status] || { label: '', cls: 'tag-outline' }
+
+const filtered = computed(() => {
+  if (filter.value === 'Tous') return calendar.mentorees
+  const map = { Actifs: 'active', 'En pause': 'paused', Terminés: 'done' }
+  return calendar.mentorees.filter((m) => m.status === map[filter.value])
+})
+
+const counts = computed(() => ({
+  Tous: calendar.mentorees.length,
+  Actifs: calendar.mentorees.filter((m) => m.status === 'active').length,
+  'En pause': calendar.mentorees.filter((m) => m.status === 'paused').length,
+  Terminés: calendar.mentorees.filter((m) => m.status === 'done').length
+}))
 
 const openMessage = (m) => {
   selected.value = m
@@ -29,49 +50,85 @@ const sendReply = () => {
   toast.show('Message envoyé 💬')
   selected.value = null
 }
+
+const planify = (m) => {
+  toast.show(`Nouvelle session planifiée avec ${m.name} ✅`)
+  router.push('/app/agenda')
+}
+
+const relaunch = (m) => {
+  calendar.setMentoreeStatus(m.id, 'active')
+  toast.show(`${m.name} est de nouveau actif 🎉`)
+}
 </script>
 
 <template>
   <div class="mm">
-    <div class="mm-head card">
-      <span class="mm-icon"><Icon name="users" :size="26" /></span>
-      <div>
-        <h1>Mes mentorés</h1>
-        <p class="text-soft">{{ calendar.mentorees.length }} personne(s) accompagnée(s) ce mois-ci</p>
-      </div>
+    <header class="mm-head">
+      <h1>Mes Mentorés</h1>
+      <p class="text-soft">
+        Gérez les relations avec votre communauté, suivez leurs progrès et planifiez vos prochaines sessions.
+      </p>
+    </header>
+
+    <!-- Filtres par statut -->
+    <div class="mm-filters">
+      <button
+        v-for="f in FILTERS"
+        :key="f"
+        class="chip"
+        :class="{ 'chip-active': filter === f }"
+        @click="filter = f"
+      >
+        {{ f }} <span class="cnt">{{ counts[f] }}</span>
+      </button>
     </div>
 
     <div class="mm-list">
-      <article v-for="m in calendar.mentorees" :key="m.id" class="mm-card card">
+      <article v-for="m in filtered" :key="m.id" class="mm-card card">
         <div class="mm-top">
-          <Avatar :name="m.name" :size="48" />
+          <Avatar :name="m.name" :size="50" />
           <div class="grow">
-            <h3>{{ m.name }}</h3>
-            <p class="text-faint">{{ m.title }}</p>
+            <div class="row gap-8">
+              <h3>{{ m.name }}</h3>
+              <span class="tag" :class="statusOf(m).cls">{{ statusOf(m).label }}</span>
+            </div>
+            <p class="text-soft role">{{ m.role }}</p>
           </div>
-          <span class="tag" :class="statusMeta[m.status].cls">{{ statusMeta[m.status].label }}</span>
         </div>
 
-        <div class="goal">
-          <Icon name="sparkles" :size="15" class="text-green" />
-          <span>{{ m.goal }}</span>
+        <div class="mm-last">
+          <Icon name="calendar" :size="14" />
+          Dernière session : {{ m.lastSession }}
         </div>
 
         <div class="mm-foot">
-          <span class="next">
-            <Icon name="calendar" :size="14" />
-            {{ m.nextSession }}
-          </span>
           <span class="grow"></span>
-          <button class="btn btn-ghost btn-sm" @click="toast.show('Fonctionnalité bientôt disponible')">
-            <Icon name="refresh" :size="14" /> Reporter
+          <!-- Actif : Message + Planifier -->
+          <template v-if="m.status === 'active'">
+            <button class="btn btn-ghost btn-sm" @click="openMessage(m)">
+              <Icon name="message" :size="14" /> Message
+              <span v-if="m.messages" class="badge">{{ m.messages }}</span>
+            </button>
+            <button class="btn btn-primary btn-sm" @click="planify(m)">
+              <Icon name="calendar" :size="14" /> Planifier
+            </button>
+          </template>
+          <!-- En pause : Relancer -->
+          <button v-else-if="m.status === 'paused'" class="btn btn-primary btn-sm" @click="relaunch(m)">
+            <Icon name="refresh" :size="14" /> Relancer
           </button>
-          <button class="btn btn-outline btn-sm" @click="openMessage(m)">
-            <Icon name="message" :size="14" /> Message
-            <span v-if="m.messages" class="badge">{{ m.messages }}</span>
+          <!-- Terminé : Reprendre -->
+          <button v-else class="btn btn-outline btn-sm" @click="relaunch(m)">
+            <Icon name="refresh" :size="14" /> Reprendre
           </button>
         </div>
       </article>
+
+      <div v-if="!filtered.length" class="empty-state card">
+        <div class="emoji">👥</div>
+        <h3>Aucun mentoré dans cette catégorie</h3>
+      </div>
     </div>
 
     <SheetModal :open="!!selected" :title="`Message à ${selected?.name || ''}`" @close="selected = null">
@@ -84,52 +141,37 @@ const sendReply = () => {
 </template>
 
 <style scoped>
-.mm { padding-top: 18px; }
-.mm-head {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 18px;
-  margin-bottom: 16px;
+.mm-head h1 { font-size: 24px; font-weight: 800; }
+.mm-head p { font-size: 14px; margin-top: 6px; max-width: 560px; }
+
+.mm-filters { display: flex; gap: 8px; margin: 20px 0 18px; flex-wrap: wrap; }
+.cnt {
+  background: rgba(0, 0, 0, 0.08);
+  border-radius: 999px;
+  padding: 1px 7px;
+  font-size: 11.5px;
 }
-.mm-head h1 { font-size: 20px; }
-.mm-head p { font-size: 12.5px; }
-.mm-icon {
-  width: 52px; height: 52px;
-  border-radius: 16px;
-  background: var(--green-soft);
-  color: var(--green);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
+.chip-active .cnt { background: rgba(255, 255, 255, 0.25); }
 
 .mm-list { display: flex; flex-direction: column; gap: 12px; }
-.mm-card { padding: 16px; }
+.mm-card { padding: 18px; }
 .mm-top { display: flex; align-items: flex-start; gap: 12px; }
-.mm-top h3 { font-size: 15px; }
-.mm-top p { font-size: 12.5px; }
+.mm-top h3 { font-size: 15.5px; }
+.role { font-size: 13px; margin-top: 3px; }
 
-.goal {
-  display: flex;
+.mm-last {
+  display: inline-flex;
   align-items: center;
   gap: 7px;
-  margin-top: 12px;
-  padding: 10px 12px;
+  margin-top: 13px;
+  padding: 9px 13px;
   background: var(--green-mist);
   border-radius: var(--radius-sm);
   font-size: 13px;
-  font-weight: 500;
   color: var(--green-strong);
 }
 
-.mm-foot {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 12px;
-}
-.next { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: var(--ink-soft); }
+.mm-foot { display: flex; align-items: center; gap: 8px; margin-top: 14px; }
 .badge {
   background: var(--green);
   color: #fff;
