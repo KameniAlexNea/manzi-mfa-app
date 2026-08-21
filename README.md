@@ -57,4 +57,4 @@ src/
 
 ---
 
-© 2024 Mongulu Collective. Tous droits réservés.
+© 2026 Mongulu Collective. Tous droits réservés.

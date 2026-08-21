@@ -34,11 +34,18 @@ const nav = (to) => {
   router.push(to)
 }
 
+const goMain = () => {
+  emit('close')
+  router.push('/')
+}
+
 const logout = () => {
   emit('close')
   auth.logout()
   router.push('/')
 }
+
+const year = new Date().getFullYear()
 </script>
 
 <template>
@@ -47,10 +54,10 @@ const logout = () => {
     <div v-if="open" class="overlay" @click="emit('close')" />
 
     <aside class="sidebar">
-      <div class="side-brand">
+      <button class="side-brand" title="Retour au site" @click="goMain">
         <LogoMark :size="34" />
         <p class="side-tag">Tech Mentorship</p>
-      </div>
+      </button>
 
       <nav class="side-menu">
         <button
@@ -70,6 +77,10 @@ const logout = () => {
 
         <div class="side-spacer" />
 
+        <button class="side-item side-site" @click="goMain">
+          <Icon name="globe" :size="19" />
+          <span>Retour au site</span>
+        </button>
         <button class="side-item" :class="{ active: $route.path === '/app/profile' }" @click="nav('/app/profile')">
           <Icon name="sliders" :size="19" />
           <span>Settings</span>
@@ -81,7 +92,7 @@ const logout = () => {
       </nav>
 
       <div class="side-foot">
-        <p>© 2024 Mongulu Collective. All rights reserved.</p>
+        <p>© {{ year }} Mongulu Collective. All rights reserved.</p>
         <div class="side-links">
           <a href="#" @click.prevent>About Us</a>
           <a href="#" @click.prevent>Privacy Policy</a>
@@ -116,7 +127,17 @@ const logout = () => {
   padding: 22px 16px;
 }
 
-.side-brand { padding: 0 10px 20px; }
+.side-brand {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  padding: 0 10px 20px;
+  cursor: pointer;
+  border-radius: 12px;
+}
+.side-brand:hover { background: var(--green-mist); }
+.side-site { color: var(--green-strong); }
 .side-tag { font-size: 12px; color: var(--ink-faint); margin-top: 4px; }
 
 .side-menu { display: flex; flex-direction: column; gap: 3px; flex: 1; }

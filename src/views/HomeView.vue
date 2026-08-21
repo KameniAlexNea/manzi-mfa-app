@@ -57,6 +57,8 @@ const featured = [
   { id: 'emmanuel', firstName: 'Emmanuel', name: 'Emmanuel Koffi', title: 'Frontend Lead', company: 'FinLink', stack: ['React', 'UI Design'], online: true },
   { id: 'sarah', firstName: 'Sarah', name: 'Sarah Nkosi', title: 'Engineering Manager', company: 'GlobalTech', stack: ['Leadership', 'Scale'], online: true }
 ]
+
+const year = new Date().getFullYear()
 </script>
 
 <template>
@@ -236,7 +238,7 @@ const featured = [
           <a href="#" @click.prevent>Contact</a>
         </nav>
       </div>
-      <p class="footer-copy">© 2024 Mongulu Collective. All rights reserved.</p>
+      <p class="footer-copy">© {{ year }} Mongulu Collective. All rights reserved.</p>
     </footer>
   </div>
 </template>

@@ -1,4 +1,5 @@
 <script setup>
+const year = new Date().getFullYear()
 </script>
 
 <template>
@@ -7,7 +8,7 @@
       <button class="help-link" @click="$router.push('/how-it-works')">
         Besoin d’aide&nbsp;? <strong>En savoir plus sur notre programme</strong>
       </button>
-      <p class="copy">© 2024 Mongulu Collective. Tous droits réservés.</p>
+      <p class="copy">© {{ year }} Mongulu Collective. Tous droits réservés.</p>
       <div class="links">
         <a href="#" @click.prevent>Confidentialité</a>
         <a href="#" @click.prevent>Conditions</a>
