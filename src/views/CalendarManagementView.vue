@@ -84,7 +84,8 @@ const saveChanges = () => {
       </p>
     </header>
 
-    <!-- Connection Status -->
+    <!-- Connection Status + Sync Settings (2 colonnes) -->
+    <div class="cm-cols">
     <section class="cm-card card">
       <div class="cm-card-head">
         <h2>Connection Status</h2>
@@ -140,6 +141,7 @@ const saveChanges = () => {
         Les nouveaux mentorés recevront automatiquement une invitation sur ce calendrier.
       </p>
     </section>
+    </div>
 
     <!-- Availability Rules -->
     <section class="cm-card card">
@@ -242,19 +244,33 @@ const saveChanges = () => {
 </template>
 
 <style scoped>
-.cm { padding-top: 8px; max-width: 860px; }
+.cm { padding-top: 8px; }
 .cm-head h1 { font-size: 24px; font-weight: 800; }
 .cm-head p { font-size: 14px; margin-top: 6px; }
 
 .cm-card { padding: 20px; margin-top: 16px; }
+
+.cm-cols {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) 3fr;
+  gap: 16px;
+  margin-top: 16px;
+  align-items: start;
+}
+.cm-cols .cm-card { margin-top: 0; }
+@media (max-width: 720px) {
+  .cm-cols { grid-template-columns: 1fr; }
+}
+
 .cm-card-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
   margin-bottom: 14px;
+  flex-wrap: wrap;
 }
-.cm-card-head h2 { font-size: 16.5px; }
+.cm-card-head h2 { font-size: 16.5px; white-space: nowrap; }
 
 /* Connection */
 .pill {
@@ -265,12 +281,15 @@ const saveChanges = () => {
   border-radius: 999px;
   font-size: 12.5px;
   font-weight: 700;
+  white-space: nowrap;
 }
 .pill .dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
 .pill.ok { background: var(--green-mist); color: var(--green-strong); }
 .pill.off { background: var(--border-soft); color: var(--ink-soft); }
 
-.conn-account { display: flex; align-items: center; gap: 12px; }
+.conn-account { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.conn-account > div { min-width: 0; }
+.conn-account strong { display: block; overflow-wrap: anywhere; }
 .acc-ico {
   width: 40px; height: 40px;
   border-radius: 12px;

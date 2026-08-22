@@ -64,24 +64,26 @@ const relaunch = (m) => {
 
 <template>
   <div class="mm">
-    <header class="mm-head">
-      <h1>Mes Mentorés</h1>
-      <p class="text-soft">
-        Gérez les relations avec votre communauté, suivez leurs progrès et planifiez vos prochaines sessions.
-      </p>
-    </header>
+    <div class="mm-top">
+      <header class="mm-head">
+        <h1>Mes Mentorés</h1>
+        <p class="text-soft">
+          Gérez les relations avec votre communauté, suivez leurs progrès et planifiez vos prochaines sessions.
+        </p>
+      </header>
 
-    <!-- Filtres par statut -->
-    <div class="mm-filters">
-      <button
-        v-for="f in FILTERS"
-        :key="f"
-        class="chip"
-        :class="{ 'chip-active': filter === f }"
-        @click="filter = f"
-      >
-        {{ f }} <span class="cnt">{{ counts[f] }}</span>
-      </button>
+      <!-- Filtres par statut (à droite du titre) -->
+      <div class="mm-filters">
+        <button
+          v-for="f in FILTERS"
+          :key="f"
+          class="chip"
+          :class="{ 'chip-active': filter === f }"
+          @click="filter = f"
+        >
+          {{ f }} <span class="cnt">{{ counts[f] }}</span>
+        </button>
+      </div>
     </div>
 
     <div class="mm-list">
@@ -141,10 +143,17 @@ const relaunch = (m) => {
 </template>
 
 <style scoped>
+.mm-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
 .mm-head h1 { font-size: 24px; font-weight: 800; }
 .mm-head p { font-size: 14px; margin-top: 6px; max-width: 560px; }
 
-.mm-filters { display: flex; gap: 8px; margin: 20px 0 18px; flex-wrap: wrap; }
+.mm-filters { display: flex; gap: 8px; flex-wrap: wrap; padding-top: 6px; }
 .cnt {
   background: rgba(0, 0, 0, 0.08);
   border-radius: 999px;
@@ -153,7 +162,12 @@ const relaunch = (m) => {
 }
 .chip-active .cnt { background: rgba(255, 255, 255, 0.25); }
 
-.mm-list { display: flex; flex-direction: column; gap: 12px; }
+.mm-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
+  margin-top: 24px;
+}
 .mm-card { padding: 18px; }
 .mm-top { display: flex; align-items: flex-start; gap: 12px; }
 .mm-top h3 { font-size: 15.5px; }

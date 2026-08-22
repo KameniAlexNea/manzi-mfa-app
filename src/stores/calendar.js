@@ -73,8 +73,12 @@ export const useCalendarStore = defineStore('calendar', {
     availability: JSON.parse(localStorage.getItem(AVAIL_KEY) || 'null') || [...defaultAvailability],
     bookings: JSON.parse(localStorage.getItem(BOOKINGS_KEY) || 'null') || [...seedBookings],
     mentorees: [...seedMentorees],
-    agendaConnected: localStorage.getItem('manzi_agenda_connected') === 'true',
-    agendaProvider: localStorage.getItem('manzi_agenda_provider') || null
+    // Démo : connecté par défaut (Google) sauf si l'utilisateur a explicitement déconnecté.
+    agendaConnected:
+      localStorage.getItem('manzi_agenda_connected') === null
+        ? true
+        : localStorage.getItem('manzi_agenda_connected') === 'true',
+    agendaProvider: localStorage.getItem('manzi_agenda_provider') || 'google'
   }),
   actions: {
     addBooking(booking) {
@@ -106,7 +110,7 @@ export const useCalendarStore = defineStore('calendar', {
     disconnectAgenda() {
       this.agendaConnected = false
       this.agendaProvider = null
-      localStorage.removeItem('manzi_agenda_connected')
+      localStorage.setItem('manzi_agenda_connected', 'false')
       localStorage.removeItem('manzi_agenda_provider')
     },
     persist() {
