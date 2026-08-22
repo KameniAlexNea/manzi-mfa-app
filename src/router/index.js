@@ -35,7 +35,7 @@ const routes = [
       { path: 'mentors', name: 'mentors', component: FindMentorView, meta: { title: 'Découvrir' } },
       { path: 'mentors/:id', name: 'mentor-profile', component: MentorProfileView, meta: { title: 'Profil mentor' } },
       { path: 'mentors/:id/book', name: 'book-chat', component: BookChatView, meta: { title: 'Réserver un Quick Chat' } },
-      { path: 'mentors/:id/schedule', name: 'scheduling', component: SchedulingView, meta: { title: 'Choisir un créneau' } },
+      { path: 'mentors/:id/schedule', name: 'scheduling', component: SchedulingView, meta: { title: 'Book a Chat' } },
       { path: 'agenda', name: 'agenda', component: CalendarManagementView, meta: { title: 'Mon agenda' } },
       { path: 'agenda/connect', name: 'connect-agenda', component: ConnectAgendaView, meta: { title: 'Connecter mon agenda' } },
       { path: 'mentorees', name: 'mentorees', component: MyMentoreesView, meta: { title: 'Mes mentorés' } },
