@@ -48,10 +48,20 @@ const back = () => {
   else router.push('/')
 }
 
+const markOnboarded = () => localStorage.setItem('manzi_onboarded', 'true')
+
+const landing = () => (auth.isMentor ? '/app/home' : '/app/mentors')
+
 const finish = () => {
   if (!validateStep(3)) return
+  markOnboarded()
   toast.show('Profil créé avec succès 🎉')
-  setTimeout(() => router.push('/app/mentors'), 400)
+  setTimeout(() => router.push(landing()), 400)
+}
+
+const skip = () => {
+  markOnboarded()
+  router.push(landing())
 }
 
 const pickPhoto = (e) => {
@@ -73,7 +83,7 @@ const removePhoto = () => profile.update({ photo: null })
   <div class="page ob-page">
     <header class="ob-head container">
       <LogoMark :size="38" />
-      <button v-if="auth.isAuthenticated" class="btn btn-ghost btn-sm" @click="router.push('/app/mentors')">
+      <button v-if="auth.isAuthenticated" class="btn btn-ghost btn-sm" @click="skip">
         Passer
       </button>
     </header>

@@ -71,7 +71,9 @@ const details = computed(() => [
         <span class="tag tag-amber">Prochaine dispo : {{ mentor.nextSlot }}</span>
       </div>
       <div class="slot-row">
-        <span v-for="s in mentor.availability" :key="s" class="slot">{{ s }}</span>
+        <span v-for="(s, i) in mentor.availability" :key="i" class="slot">
+          {{ s.day }} {{ s.start }} – {{ s.end }}
+        </span>
       </div>
     </section>
 

@@ -1,15 +1,16 @@
 <script setup>
 import { computed, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { MENTORS } from '../data/mentors'
 import MentorCard from '../components/MentorCard.vue'
 import Icon from '../components/Icon.vue'
 import SheetModal from '../components/SheetModal.vue'
 import { EXPERIENCE_LEVELS } from '../data/skills'
 
+const route = useRoute()
 const router = useRouter()
 
-const query = ref('')
+const query = ref(route.query.q || '')
 const openFilter = ref(false)
 const filters = ref({
   stacks: [],

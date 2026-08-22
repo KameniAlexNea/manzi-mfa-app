@@ -5,6 +5,7 @@ import { MENTORS } from '../data/mentors'
 import { BOOKING_TOPICS } from '../data/skills'
 import { useCalendarStore } from '../stores/calendar'
 import { useToastStore } from '../stores/toast'
+import Avatar from '../components/Avatar.vue'
 import Icon from '../components/Icon.vue'
 
 const route = useRoute()
@@ -25,8 +26,8 @@ const selectedTime = ref('')
 const confirmed = ref(null)
 
 const MONTHS = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre']
-const WD = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim']
-const DOW_HEADERS = ['L', 'M', 'M', 'J', 'V', 'S', 'D']
+const WD_BY_DAY = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'] // index = getDay() (dimanche = 0)
+const DOW_HEADERS = ['D', 'L', 'M', 'M', 'J', 'V', 'S'] // semaine commençant dimanche
 
 const topicLabel = computed(() => BOOKING_TOPICS.find((t) => t.id === topic.value)?.label || 'Quick Chat')
 
@@ -37,15 +38,21 @@ const isBeforeToday = (d) => {
   return d < today0
 }
 
+const isInMonth = (d) => d && d.getMonth() === viewMonth.value
+
 const days = computed(() => {
   const first = new Date(viewYear.value, viewMonth.value, 1)
-  // Lundi = 0
-  const offset = (first.getDay() + 6) % 7
+  // Dimanche = 0 (début de semaine)
+  const offset = first.getDay()
   const total = new Date(viewYear.value, viewMonth.value + 1, 0).getDate()
+  const prevTotal = new Date(viewYear.value, viewMonth.value, 0).getDate()
   const arr = []
-  for (let i = 0; i < offset; i++) arr.push(null)
+  // Jours de queue du mois précédent
+  for (let i = offset - 1; i >= 0; i--) arr.push(new Date(viewYear.value, viewMonth.value - 1, prevTotal - i))
   for (let d = 1; d <= total; d++) arr.push(new Date(viewYear.value, viewMonth.value, d))
-  while (arr.length % 7 !== 0) arr.push(null)
+  // Jours de tête du mois suivant
+  let next = 1
+  while (arr.length % 7 !== 0) arr.push(new Date(viewYear.value, viewMonth.value + 1, next++))
   return arr
 })
 
@@ -58,8 +65,32 @@ const nextMonth = () => {
   selected.value = null; selectedTime.value = ''
 }
 
+const toMin = (t) => {
+  const [h, m] = t.split(':').map(Number)
+  return h * 60 + m
+}
+const fmtTime = (min) =>
+  `${String(Math.floor(min / 60)).padStart(2, '0')}:${String(min % 60).padStart(2, '0')}`
+
+// Génère les créneaux (de durée = session) à l'intérieur des périodes définies.
+const generateSlots = (periods, dur) => {
+  const out = []
+  for (const p of periods) {
+    const start = toMin(p.start)
+    const end = toMin(p.end)
+    for (let t = start; t + dur <= end; t += dur) out.push(fmtTime(t))
+  }
+  return out
+}
+
+const hasSlots = (d) => {
+  if (!d) return false
+  const wd = WD_BY_DAY[d.getDay()]
+  return mentor.value.availability.some((a) => a.day === wd)
+}
+
 const pick = (d) => {
-  if (!d || isBeforeToday(d)) return
+  if (!d || isBeforeToday(d) || !isInMonth(d) || !hasSlots(d)) return
   selected.value = d
   selectedTime.value = ''
 }
@@ -68,13 +99,22 @@ const isSelected = (d) => selected.value && d && d.toDateString() === selected.v
 
 const slotTimes = computed(() => {
   if (!selected.value) return []
-  const wd = WD[(selected.value.getDay() + 6) % 7]
-  const slots = mentor.value.availability.filter((a) => a.startsWith(wd))
-  const times = slots.map((s) => s.split(' ')[1]).filter(Boolean)
-  return times.length ? times : ['09:00', '10:30', '14:00', '16:30']
+  const wd = WD_BY_DAY[selected.value.getDay()]
+  const periods = mentor.value.availability.filter((a) => a.day === wd)
+  return generateSlots(periods, duration.value)
 })
 
 const canConfirm = computed(() => selected.value && selectedTime.value)
+
+const endOf = (t) => {
+  const [h, m] = t.split(':').map(Number)
+  const total = h * 60 + m + duration.value
+  const hh = String(Math.floor(total / 60) % 24).padStart(2, '0')
+  const mm = String(total % 60).padStart(2, '0')
+  return `${hh}:${mm}`
+}
+
+const goBack = () => router.push(`/app/mentors/${mentor.value.id}/book`)
 
 const localDateKey = (d) =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
@@ -103,69 +143,105 @@ const done = () => {
 
 <template>
   <div class="sched">
-    <section class="card cal-card">
-      <div class="cal-head">
-        <button class="icon-btn" aria-label="Mois précédent" @click="prevMonth">
-          <Icon name="chevron-left" :size="18" />
-        </button>
-        <strong class="cal-month">{{ monthLabel }}</strong>
-        <button class="icon-btn" aria-label="Mois suivant" @click="nextMonth">
-          <Icon name="chevron-right" :size="18" />
-        </button>
-      </div>
-
-      <div class="cal-grid">
-        <span v-for="(h, i) in DOW_HEADERS" :key="'h' + i" class="dow">{{ h }}</span>
-        <template v-for="(d, i) in days" :key="i">
-          <button
-            v-if="d"
-            class="day"
-            :class="{
-              today: d.toDateString() === today.toDateString(),
-              selected: isSelected(d),
-              disabled: isBeforeToday(d)
-            }"
-            :disabled="isBeforeToday(d)"
-            @click="pick(d)"
-          >
-            {{ d.getDate() }}
-          </button>
-          <span v-else class="day blank" />
-        </template>
-      </div>
-    </section>
-
-    <section class="card slot-card">
-      <h2 v-if="selected">
-        Créneaux du {{ selected.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' }) }}
-      </h2>
-      <h2 v-else>Sélectionnez une date</h2>
-
-      <div v-if="selected" class="times">
-        <button
-          v-for="t in slotTimes"
-          :key="t"
-          class="time"
-          :class="{ on: selectedTime === t }"
-          @click="selectedTime = t"
-        >
-          <Icon name="clock" :size="15" /> {{ t }}
-        </button>
-      </div>
-      <p v-else class="text-faint hint">Choisissez une date disponible dans le calendrier pour voir les créneaux.</p>
-    </section>
-
-    <div class="summary card">
-      <div class="row gap-12">
-        <span class="tag tag-green">{{ topicLabel }}</span>
-        <span class="tag tag-outline">{{ duration }} min</span>
-      </div>
-      <p class="mt-8 text-soft" v-if="selected && selectedTime">
-        <strong>{{ mentor.name }}</strong> · {{ selected.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' }) }} à {{ selectedTime }}
+    <header class="sched-head">
+      <h1>Book a Chat</h1>
+      <p class="text-soft">
+        Choisissez une date et une heure qui vous conviennent, et à <strong>{{ mentor.name }}</strong>.
       </p>
-      <button class="btn btn-primary btn-lg btn-block mt-16" :disabled="!canConfirm" @click="confirmBooking">
-        Confirmer la réservation
-      </button>
+    </header>
+
+    <!-- Étapes : Quick Details (fait) → Date & Heure (en cours) -->
+    <div class="steps-2">
+      <div class="step done">
+        <span class="s-dot"><Icon name="check" :size="13" /></span>
+        <span>Quick Details</span>
+      </div>
+      <div class="s-line" />
+      <div class="step active">
+        <span class="s-dot">2</span>
+        <span>Date &amp; Heure</span>
+      </div>
+    </div>
+
+    <div class="sched-grid">
+      <!-- Carte mentor -->
+      <aside class="col m-card card">
+        <Avatar :name="mentor.name" :size="76" :online="mentor.online" />
+        <h2>{{ mentor.name }}</h2>
+        <p class="m-role">{{ mentor.title.toUpperCase() }}</p>
+        <ul class="m-details">
+          <li><Icon name="clock" :size="16" /> {{ duration }} min session</li>
+          <li><Icon name="video" :size="16" /> Google Meet</li>
+          <li><Icon name="globe" :size="16" /> UTC +1 (Afrique de l'Ouest)</li>
+        </ul>
+        <div class="m-exp">
+          <p class="exp-title">Mentor Expertise</p>
+          <div class="tags">
+            <span v-for="s in mentor.stack.slice(0, 3)" :key="s" class="tag">{{ s }}</span>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Calendrier -->
+      <section class="col cal-col card">
+        <div class="cal-head">
+          <button class="icon-btn" aria-label="Mois précédent" @click="prevMonth">
+            <Icon name="chevron-left" :size="18" />
+          </button>
+          <strong class="cal-month">{{ monthLabel }}</strong>
+          <button class="icon-btn" aria-label="Mois suivant" @click="nextMonth">
+            <Icon name="chevron-right" :size="18" />
+          </button>
+        </div>
+
+        <div class="cal-grid">
+          <span v-for="(h, i) in DOW_HEADERS" :key="'h' + i" class="dow">{{ h }}</span>
+          <template v-for="(d, i) in days" :key="i">
+            <button
+              class="day"
+              :class="{
+                today: isInMonth(d) && d.toDateString() === today.toDateString(),
+                selected: isSelected(d),
+                muted: !isInMonth(d),
+                disabled: isBeforeToday(d) || !isInMonth(d) || !hasSlots(d)
+              }"
+              :disabled="isBeforeToday(d) || !isInMonth(d) || !hasSlots(d)"
+              @click="pick(d)"
+            >
+              {{ d.getDate() }}
+            </button>
+          </template>
+        </div>
+
+        <p class="sync-note">
+          <Icon name="link" :size="14" />
+          Intégration active : synchronisation avec l'agenda Google de {{ mentor.name }}. Seuls les créneaux réellement disponibles sont affichés.
+        </p>
+      </section>
+
+      <!-- Créneaux -->
+      <section class="col slots-col card">
+        <h2 v-if="selected" class="slots-date">
+          {{ selected.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'short' }).toUpperCase() }}
+        </h2>
+        <h2 v-else class="slots-date">SÉLECTIONNEZ UNE DATE</h2>
+        <p class="slots-hint">Sélectionnez un créneau</p>
+
+        <div v-if="selected" class="slot-list">
+          <button v-for="t in slotTimes" :key="t" class="slot" :class="{ on: selectedTime === t }" @click="selectedTime = t">
+            {{ t }} – {{ endOf(t) }}
+          </button>
+          <p v-if="!slotTimes.length" class="text-faint no-slot">Aucun créneau disponible ce jour.</p>
+        </div>
+        <p v-else class="text-faint slots-empty">Choisissez une date dans le calendrier.</p>
+
+        <button class="btn btn-primary btn-lg btn-block" :disabled="!canConfirm" @click="confirmBooking">
+          Confirmer la réservation
+        </button>
+        <button class="btn btn-ghost btn-block mt-8" @click="goBack">
+          <Icon name="arrow-left" :size="16" /> Retour
+        </button>
+      </section>
     </div>
 
     <!-- Confirmation -->
@@ -189,17 +265,88 @@ const done = () => {
 </template>
 
 <style scoped>
-.sched { padding-top: 18px; }
-.cal-card, .slot-card { padding: 18px; margin-top: 14px; }
+.sched { padding-top: 8px; }
+
+.sched-head h1 { font-size: 26px; font-weight: 800; }
+.sched-head p { font-size: 14.5px; margin-top: 6px; }
+
+/* Étapes (2) */
+.steps-2 {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 22px 0 20px;
+}
+.step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ink-faint);
+}
+.step.active { color: var(--green-strong); }
+.step.done { color: var(--green-strong); }
+.s-dot {
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  background: var(--card);
+  border: 2px solid var(--border);
+  color: var(--ink-soft);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+}
+.step.active .s-dot { background: var(--green); border-color: var(--green); color: #fff; }
+.step.done .s-dot { background: var(--green); border-color: var(--green); color: #fff; }
+.s-line { flex: 1; max-width: 120px; height: 2px; background: var(--border); border-radius: 2px; }
+
+/* 3 colonnes */
+.sched-grid {
+  display: grid;
+  grid-template-columns: 250px 1fr 290px;
+  gap: 18px;
+  align-items: start;
+}
+.col { padding: 20px; }
+
+/* Carte mentor */
+.m-card { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.m-card h2 { font-size: 19px; margin-top: 6px; }
+.m-role { font-size: 10.5px; letter-spacing: 0.08em; color: var(--ink-faint); font-weight: 700; }
+.m-details {
+  list-style: none;
+  width: 100%;
+  margin-top: 14px;
+  border-top: 1px solid var(--border-soft);
+  padding-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+.m-details li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+.m-details li svg { color: var(--green); }
+.m-exp { width: 100%; margin-top: 16px; text-align: left; }
+.exp-title { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-faint); font-weight: 700; margin-bottom: 8px; }
+.m-exp .tags { display: flex; flex-wrap: wrap; gap: 6px; }
+
+/* Calendrier */
 .cal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
 .cal-month { font-family: var(--font-display); font-size: 15.5px; }
-
-.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
 .dow { text-align: center; font-size: 11px; font-weight: 700; color: var(--ink-faint); padding: 4px 0; }
 .day {
   aspect-ratio: 1;
-  border-radius: 12px;
-  font-size: 13.5px;
+  border-radius: 10px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--ink);
   background: var(--cream-soft);
@@ -213,28 +360,51 @@ const done = () => {
 .day.today { border-color: var(--green); color: var(--green-strong); }
 .day.selected { background: var(--green); color: #fff; box-shadow: 0 4px 12px rgba(30, 123, 75, 0.3); }
 .day.disabled { opacity: 0.35; cursor: not-allowed; }
+.day.muted { opacity: 0.35; background: transparent; }
 .day.blank { background: none; }
+.sync-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 14px;
+  padding: 10px 12px;
+  background: var(--green-mist);
+  border-radius: 10px;
+  font-size: 11.5px;
+  color: var(--green-strong);
+  line-height: 1.45;
+}
+.sync-note svg { flex-shrink: 0; margin-top: 1px; }
 
-.slot-card h2 { font-size: 15.5px; margin-bottom: 12px; }
-.hint { font-size: 13px; }
-.times { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 10px; }
-.time {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 11px 8px;
-  border-radius: 12px;
+/* Créneaux */
+.slots-col { display: flex; flex-direction: column; }
+.slots-date { font-size: 13px; letter-spacing: 0.04em; }
+.slots-hint { font-size: 12px; color: var(--ink-faint); margin: 4px 0 12px; }
+.slot-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+.slot {
+  text-align: center;
+  padding: 11px;
+  border-radius: 10px;
   border: 1.5px solid var(--border);
   background: var(--cream-soft);
   font-size: 13px;
   font-weight: 600;
+  color: var(--ink);
+  transition: all 0.12s ease;
 }
-.time:hover { border-color: var(--green); }
-.time.on { background: var(--green); border-color: var(--green); color: #fff; }
-
-.summary { margin-top: 14px; padding: 18px; }
+.slot:hover { border-color: var(--green); }
+.slot.on { background: var(--green); border-color: var(--green); color: #fff; }
+.no-slot, .slots-empty { font-size: 13px; }
+.slots-col .btn { margin-top: 8px; }
 
 .ok { display: flex; justify-content: center; color: var(--green); margin-bottom: 10px; }
 .modal-sheet h3 { font-size: 20px; }
+
+@media (max-width: 1000px) {
+  .sched-grid { grid-template-columns: 1fr 1fr; }
+  .slots-col { grid-column: 1 / -1; }
+}
+@media (max-width: 640px) {
+  .sched-grid { grid-template-columns: 1fr; }
+}
 </style>
