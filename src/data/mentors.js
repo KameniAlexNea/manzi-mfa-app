@@ -16,7 +16,13 @@ export const MENTORS = [
     languages: ['Français', 'Anglais'],
     rating: 4.9,
     reviews: 34,
-    availability: ['Lun 10:00', 'Lun 14:00', 'Mar 09:00', 'Jeu 16:00', 'Ven 11:00'],
+    availability: [
+      { day: 'Lun', start: '10:00', end: '12:00' },
+      { day: 'Lun', start: '14:00', end: '17:00' },
+      { day: 'Mar', start: '09:00', end: '11:00' },
+      { day: 'Jeu', start: '16:00', end: '18:00' },
+      { day: 'Ven', start: '11:00', end: '13:00' }
+    ],
     nextSlot: 'Lun 10:00',
     online: true,
     verified: true
@@ -37,7 +43,12 @@ export const MENTORS = [
     languages: ['Français'],
     rating: 4.8,
     reviews: 21,
-    availability: ['Lun 18:00', 'Mar 12:30', 'Mer 17:00', 'Sam 10:00'],
+    availability: [
+      { day: 'Lun', start: '18:00', end: '20:00' },
+      { day: 'Mar', start: '12:30', end: '14:30' },
+      { day: 'Mer', start: '17:00', end: '19:00' },
+      { day: 'Sam', start: '10:00', end: '12:00' }
+    ],
     nextSlot: 'Mar 12:30',
     online: false,
     verified: true
@@ -58,7 +69,12 @@ export const MENTORS = [
     languages: ['Français', 'Anglais'],
     rating: 5.0,
     reviews: 41,
-    availability: ['Lun 09:30', 'Mer 14:00', 'Jeu 18:30', 'Ven 09:00'],
+    availability: [
+      { day: 'Lun', start: '09:30', end: '11:30' },
+      { day: 'Mer', start: '14:00', end: '16:00' },
+      { day: 'Jeu', start: '18:30', end: '20:00' },
+      { day: 'Ven', start: '09:00', end: '11:00' }
+    ],
     nextSlot: 'Mer 14:00',
     online: true,
     verified: true
@@ -79,7 +95,12 @@ export const MENTORS = [
     languages: ['Français', 'Anglais'],
     rating: 4.7,
     reviews: 18,
-    availability: ['Mar 18:00', 'Mer 10:00', 'Jeu 12:00', 'Ven 16:00'],
+    availability: [
+      { day: 'Mar', start: '18:00', end: '20:00' },
+      { day: 'Mer', start: '10:00', end: '12:00' },
+      { day: 'Jeu', start: '12:00', end: '14:00' },
+      { day: 'Ven', start: '16:00', end: '18:00' }
+    ],
     nextSlot: 'Mer 10:00',
     online: true,
     verified: false
@@ -100,7 +121,12 @@ export const MENTORS = [
     languages: ['Français', 'Anglais'],
     rating: 4.9,
     reviews: 27,
-    availability: ['Lun 17:00', 'Mer 09:00', 'Ven 14:00', 'Sam 11:00'],
+    availability: [
+      { day: 'Lun', start: '17:00', end: '19:00' },
+      { day: 'Mer', start: '09:00', end: '11:00' },
+      { day: 'Ven', start: '14:00', end: '16:00' },
+      { day: 'Sam', start: '11:00', end: '13:00' }
+    ],
     nextSlot: 'Ven 14:00',
     online: false,
     verified: true
@@ -121,7 +147,11 @@ export const MENTORS = [
     languages: ['Français'],
     rating: 4.6,
     reviews: 12,
-    availability: ['Mar 14:00', 'Jeu 10:00', 'Sam 09:00'],
+    availability: [
+      { day: 'Mar', start: '14:00', end: '16:00' },
+      { day: 'Jeu', start: '10:00', end: '12:00' },
+      { day: 'Sam', start: '09:00', end: '11:00' }
+    ],
     nextSlot: 'Jeu 10:00',
     online: true,
     verified: false
@@ -142,7 +172,12 @@ export const MENTORS = [
     languages: ['Français', 'Anglais'],
     rating: 4.8,
     reviews: 23,
-    availability: ['Lun 12:00', 'Mer 18:00', 'Jeu 09:30', 'Ven 17:30'],
+    availability: [
+      { day: 'Lun', start: '12:00', end: '14:00' },
+      { day: 'Mer', start: '18:00', end: '20:00' },
+      { day: 'Jeu', start: '09:30', end: '11:30' },
+      { day: 'Ven', start: '17:30', end: '19:30' }
+    ],
     nextSlot: 'Jeu 09:30',
     online: false,
     verified: true
@@ -163,7 +198,12 @@ export const MENTORS = [
     languages: ['Français', 'Anglais', 'Bambara'],
     rating: 5.0,
     reviews: 52,
-    availability: ['Lun 16:00', 'Mar 10:00', 'Mer 11:00', 'Ven 09:00'],
+    availability: [
+      { day: 'Lun', start: '16:00', end: '18:00' },
+      { day: 'Mar', start: '10:00', end: '12:00' },
+      { day: 'Mer', start: '11:00', end: '13:00' },
+      { day: 'Ven', start: '09:00', end: '11:00' }
+    ],
     nextSlot: 'Lun 16:00',
     online: true,
     verified: true

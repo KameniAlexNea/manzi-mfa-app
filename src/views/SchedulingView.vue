@@ -65,10 +65,28 @@ const nextMonth = () => {
   selected.value = null; selectedTime.value = ''
 }
 
+const toMin = (t) => {
+  const [h, m] = t.split(':').map(Number)
+  return h * 60 + m
+}
+const fmtTime = (min) =>
+  `${String(Math.floor(min / 60)).padStart(2, '0')}:${String(min % 60).padStart(2, '0')}`
+
+// Génère les créneaux (de durée = session) à l'intérieur des périodes définies.
+const generateSlots = (periods, dur) => {
+  const out = []
+  for (const p of periods) {
+    const start = toMin(p.start)
+    const end = toMin(p.end)
+    for (let t = start; t + dur <= end; t += dur) out.push(fmtTime(t))
+  }
+  return out
+}
+
 const hasSlots = (d) => {
   if (!d) return false
   const wd = WD_BY_DAY[d.getDay()]
-  return mentor.value.availability.some((a) => a.startsWith(wd))
+  return mentor.value.availability.some((a) => a.day === wd)
 }
 
 const pick = (d) => {
@@ -82,8 +100,8 @@ const isSelected = (d) => selected.value && d && d.toDateString() === selected.v
 const slotTimes = computed(() => {
   if (!selected.value) return []
   const wd = WD_BY_DAY[selected.value.getDay()]
-  const slots = mentor.value.availability.filter((a) => a.startsWith(wd))
-  return slots.map((s) => s.split(' ')[1]).filter(Boolean)
+  const periods = mentor.value.availability.filter((a) => a.day === wd)
+  return generateSlots(periods, duration.value)
 })
 
 const canConfirm = computed(() => selected.value && selectedTime.value)

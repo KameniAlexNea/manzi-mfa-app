@@ -16,15 +16,14 @@ const auth = useAuthStore()
 
 const menu = computed(() => {
   const items = [
-    { label: 'Home', icon: 'home', to: '/app/home' },
-    { label: 'Find a Mentor', icon: 'search', to: '/app/mentors' }
+    { label: 'Dashboard', icon: 'home', to: '/app/home' },
+    { label: 'Schedule', icon: 'calendar', to: '/app/agenda' }
   ]
-  if (auth.isMentor) items.push({ label: 'Mes Mentorés', icon: 'users', to: '/app/mentorees' })
+  if (auth.isMentor) items.push({ label: 'Mentorés', icon: 'users', to: '/app/mentorees' })
   items.push(
-    { label: 'Appointments', icon: 'calendar', to: '/app/agenda' },
-    { label: 'Messages', icon: 'message', to: '/app/messages' },
     { label: 'Jobs', icon: 'briefcase', to: '/app/jobs' },
-    { label: 'Resources', icon: 'book', to: '/how-it-works' }
+    { label: 'Messages', icon: 'message', to: '/app/messages' },
+    { label: 'Ressources', icon: 'book', to: '/how-it-works' }
   )
   return items
 })
@@ -56,7 +55,7 @@ const year = new Date().getFullYear()
     <aside class="sidebar">
       <button class="side-brand" title="Retour au site" @click="goMain">
         <LogoMark :size="34" />
-        <p class="side-tag">Tech Mentorship</p>
+        <p class="side-tag">Professional Growth</p>
       </button>
 
       <nav class="side-menu">
@@ -71,10 +70,6 @@ const year = new Date().getFullYear()
           <span>{{ m.label }}</span>
         </button>
 
-        <button class="btn btn-primary side-book" @click="nav('/app/mentors')">
-          <Icon name="clock" :size="18" /> Book Quick Chat
-        </button>
-
         <div class="side-spacer" />
 
         <button class="side-item side-site" @click="goMain">
@@ -84,6 +79,10 @@ const year = new Date().getFullYear()
         <button class="side-item" :class="{ active: $route.path === '/app/profile' }" @click="nav('/app/profile')">
           <Icon name="sliders" :size="19" />
           <span>Settings</span>
+        </button>
+        <button class="side-item" @click="nav('/how-it-works')">
+          <Icon name="info" :size="19" />
+          <span>Help Center</span>
         </button>
         <button class="side-item side-logout" @click="logout">
           <Icon name="logout" :size="19" />

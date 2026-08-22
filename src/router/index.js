@@ -36,7 +36,7 @@ const routes = [
       { path: 'mentors/:id', name: 'mentor-profile', component: MentorProfileView, meta: { title: 'Profil mentor' } },
       { path: 'mentors/:id/book', name: 'book-chat', component: BookChatView, meta: { title: 'Réserver un Quick Chat' } },
       { path: 'mentors/:id/schedule', name: 'scheduling', component: SchedulingView, meta: { title: 'Book a Chat' } },
-      { path: 'agenda', name: 'agenda', component: CalendarManagementView, meta: { title: 'Mon agenda' } },
+      { path: 'agenda', name: 'agenda', component: CalendarManagementView, meta: { title: 'Calendar Management' } },
       { path: 'agenda/connect', name: 'connect-agenda', component: ConnectAgendaView, meta: { title: 'Connecter mon agenda' } },
       { path: 'mentorees', name: 'mentorees', component: MyMentoreesView, meta: { title: 'Mes mentorés' } },
       { path: 'jobs', name: 'jobs', component: JobBoardView, meta: { title: 'Offres' } },
